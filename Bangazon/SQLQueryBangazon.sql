@@ -143,7 +143,7 @@ VALUES
 INSERT INTO ProductType
 ([Name])
 VALUES
-('Smart Phone');
+('Electronics');
 
 INSERT INTO PaymentType
 (AcctNumber, [Name], CustomerId)
@@ -159,3 +159,53 @@ INSERT INTO [Order]
 (CustomerId, PaymentTypeId)
 VALUES
 (1, 1);
+
+INSERT INTO Customer
+(FirstName, LastName)
+VALUES
+('Matt', 'Hall');
+
+INSERT INTO ProductType
+([Name])
+VALUES
+('Alcohol');
+
+INSERT INTO PaymentType
+(AcctNumber, [Name], CustomerId)
+VALUES
+(1234, 'Discover', 2);
+
+INSERT INTO Product
+(Price, Title, [Description], Quantity, CustomerId, ProductTypeId)
+VALUES
+(10, 'Yuengling', 'Americas Oldest Brewery', 24, 2, 2);
+
+INSERT INTO [Order]
+(CustomerId, PaymentTypeId)
+VALUES
+(2, 2);
+
+INSERT INTO Customer
+(FirstName, LastName)
+VALUES
+('Taylor', 'Gulley');
+
+INSERT INTO ProductType
+([Name])
+VALUES
+('Books');
+
+INSERT INTO PaymentType
+(AcctNumber, [Name], CustomerId)
+VALUES
+(0987, 'MasterCard', 3)
+
+INSERT INTO Product
+(Price, Title, [Description], Quantity, CustomerId, ProductTypeId)
+VALUES
+(24, 'The Hobbit', 'A short dude goes on an adventure.', 500, 3, 3);
+
+INSERT INTO [Order]
+(CustomerId, PaymentTypeId)
+VALUES
+(3, 3);
