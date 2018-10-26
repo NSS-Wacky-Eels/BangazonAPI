@@ -138,22 +138,22 @@ CREATE TABLE OrderProduct (
 INSERT INTO Customer
 (FirstName, LastName)
 VALUES
-('Streator', 'Ward');
+('Madison', 'Peper');
 
 INSERT INTO ProductType
 ([Name])
 VALUES
-('Boots');
+('Smart Phone');
 
 INSERT INTO PaymentType
 (AcctNumber, [Name], CustomerId)
 VALUES
-(1234, 'VISA', 1)
+(0123, 'Visa', 1);
 
 INSERT INTO Product
 (Price, Title, [Description], Quantity, CustomerId, ProductTypeId)
 VALUES
-(150, 'LL Bean Boots', 'Made in America', 5, 1, 1);
+(49, 'Pixel XL', 'We the best phone', 234, 1, 1);
 
 INSERT INTO [Order]
 (CustomerId, PaymentTypeId)
