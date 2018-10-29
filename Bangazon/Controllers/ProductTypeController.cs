@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Dapper;
 
 
+
 namespace Bangazon.Controllers
 {
     [Route("api/[controller]")]
@@ -28,7 +29,7 @@ namespace Bangazon.Controllers
         {
             get
             {
-                return new SqlConnection(_config.GetConnectionString("ProductTypeConnect"));
+                return new SqlConnection(_config.GetConnectionString("DefaultConnection"));
             }
         }
 
@@ -109,7 +110,7 @@ namespace Bangazon.Controllers
             UPDATE ProductType
             SET Id = '{productType.Id}',
                 LastName = '{productType.Name}'
-            WHERE Id = {id}"
+            WHERE Id = {id}";
                    try
             {
                 using (IDbConnection conn = Connection)
