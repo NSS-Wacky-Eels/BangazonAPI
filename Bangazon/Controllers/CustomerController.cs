@@ -48,7 +48,7 @@ namespace Bangazon.Controllers
             {
 
                 IEnumerable<Customer> customers = await conn.QueryAsync<Customer>(sql);
-                return Ok(customers);
+                return Ok(customers.Single());
             }
         }
 
