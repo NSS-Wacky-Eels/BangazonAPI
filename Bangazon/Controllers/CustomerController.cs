@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-
 using Dapper;
 using Microsoft.AspNetCore.Http;
+using Bangazon.Models;
 
 namespace Bangazon.Controllers
 {
@@ -74,48 +74,44 @@ namespace Bangazon.Controllers
         //    }
         //}
 
-        // GET api/students/5
-        [HttpGet("{id}", Name = "GetStudent")]
+        // GET api/customers/5
+        [HttpGet("{id}", Name = "GetCustomer")]
         public async Task<IActionResult> Get([FromRoute]int id)
         {
             string sql = $@"
             SELECT
-                s.Id,
-                s.FirstName,
-                s.LastName,
-                s.SlackHandle,
-                s.CohortId
-            FROM Student s
-            WHERE s.Id = {id}
+                c.Id,
+                c.FirstName,
+                c.LastName
+            FROM Customer c
+            WHERE c.Id = {id}
             ";
 
             using (IDbConnection conn = Connection)
             {
-                IEnumerable<Student> students = await conn.QueryAsync<Student>(sql);
-                return Ok(students);
+                IEnumerable<Customer> customers = await conn.QueryAsync<Customer>(sql);
+                return Ok(customers);
             }
         }
 
         // POST api/students
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Student student)
+        public async Task<IActionResult> Post([FromBody] Customer customer)
         {
-            string sql = $@"INSERT INTO Student 
-            (FirstName, LastName, SlackHandle, CohortId)
+            string sql = $@"INSERT INTO Customer 
+            (FirstName, LastName)
             VALUES
             (
-                '{student.FirstName}'
-                ,'{student.LastName}'
-                ,'{student.SlackHandle}'
-                ,{student.CohortId}
+                '{customer.FirstName}'
+                ,'{customer.LastName}'
             );
             SELECT SCOPE_IDENTITY();";
 
             using (IDbConnection conn = Connection)
             {
                 var newId = (await conn.QueryAsync<int>(sql)).Single();
-                student.Id = newId;
-                return CreatedAtRoute("GetStudent", new { id = newId }, student);
+                customer.Id = newId;
+                return CreatedAtRoute("GetCustomer", new { id = newId }, customer);
             }
         }
 
