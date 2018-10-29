@@ -3,7 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.Extensions.Configuration;
+using System.Data;
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Http;
+using Bangazon.Models;
+using Dapper;
 
 namespace Bangazon.Controllers
 {
@@ -11,36 +16,183 @@ namespace Bangazon.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-        // GET api/values
+        private readonly IConfiguration _config;
+
+        public ProductController(IConfiguration config)
+        {
+            _config = config;
+        }
+
+        public IDbConnection Connection
+        {
+            get
+            {
+                return new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+            }
+        }
+
+        // GET api/students?q=Taco
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        public async Task<IActionResult> Get(string q)
         {
-            return new string[] { "value1", "value2" };
+            string sql = @"
+            SELECT
+                p.Id,
+                p.Title,
+                p.Price,
+                p.Description,
+                p.Quantity,
+                p.CustomerId,
+                p.ProductTypeId,
+                c.Id,
+                c.FirstName,
+                pt.Id,
+                pt.Name
+                
+
+
+            FROM Product p
+            JOIN Customer c ON p.CustomerId = c.Id
+            JOIN ProductType pt ON p.ProductTypeId = pt.Id
+            WHERE 1=1
+            ";
+
+            //if (q != null)
+            //{
+            //    string isQ = $@"
+            //        AND i.FirstName LIKE '%{q}%'
+            //        OR i.LastName LIKE '%{q}%'
+            //        OR i.SlackHandle LIKE '%{q}%'
+            //    ";
+            //    sql = $"{sql} {isQ}";
+            //}
+
+            Console.WriteLine(sql);
+
+            using (IDbConnection conn = Connection)
+            {
+                //Properties in middle becuase Product is depenent on them (see ERD)
+                IEnumerable<Product> products = await conn.QueryAsync<Product, Customer, ProductType, Product>(
+                    sql,
+                    (product, customer, productType) =>
+                    {
+                        product.Customer = customer;
+                        product.ProductType = productType;
+                        return product;
+                    }
+                );
+                // USING ok here is a built in feature of c#. 
+                return Ok(products);
+            }
         }
 
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
+        // GET api/students/5
+        [HttpGet("{id}", Name = "GetProduct")]
+        public async Task<IActionResult> Get([FromRoute]int id)
         {
-            return "value";
+            string sql = $@"
+            SELECT
+                s.Id,
+                s.FirstName,
+                s.LastName,
+                s.SlackHandle,
+                s.CohortId
+            FROM Student s
+            WHERE s.Id = {id}
+            ";
+
+            using (IDbConnection conn = Connection)
+            {
+                IEnumerable<Product> products = await conn.QueryAsync<Product>(sql);
+                return Ok(products);
+            }
         }
 
-        // POST api/values
+        // POST api/students
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<IActionResult> Post([FromBody] Student student)
         {
+            string sql = $@"INSERT INTO Student 
+            (FirstName, LastName, SlackHandle, CohortId)
+            VALUES
+            (
+                '{student.FirstName}'
+                ,'{student.LastName}'
+                ,'{student.SlackHandle}'
+                ,{student.CohortId}
+            );
+            SELECT SCOPE_IDENTITY();";
+
+            using (IDbConnection conn = Connection)
+            {
+                var newId = (await conn.QueryAsync<int>(sql)).Single();
+                student.Id = newId;
+                return CreatedAtRoute("GetStudent", new { id = newId }, student);
+            }
         }
 
-        // PUT api/values/5
+        // PUT api/students/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<IActionResult> Put(int id, [FromBody] Student student)
         {
+            string sql = $@"
+            UPDATE Student
+            SET FirstName = '{student.FirstName}',
+                LastName = '{student.LastName}',
+                SlackHandle = '{student.SlackHandle}'
+            WHERE Id = {id}";
+
+            try
+            {
+                using (IDbConnection conn = Connection)
+                {
+                    int rowsAffected = await conn.ExecuteAsync(sql);
+                    if (rowsAffected > 0)
+                    {
+                        return new StatusCodeResult(StatusCodes.Status204NoContent);
+                    }
+                    throw new Exception("No rows affected");
+                }
+            }
+            catch (Exception)
+            {
+                if (!StudentExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
-        // DELETE api/values/5
+        // DELETE api/students/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
+            string sql = $@"DELETE FROM Student WHERE Id = {id}";
+
+            using (IDbConnection conn = Connection)
+            {
+                int rowsAffected = await conn.ExecuteAsync(sql);
+                if (rowsAffected > 0)
+                {
+                    return new StatusCodeResult(StatusCodes.Status204NoContent);
+                }
+                throw new Exception("No rows affected");
+            }
+
+        }
+
+        private bool StudentExists(int id)
+        {
+            string sql = $"SELECT Id FROM Student WHERE Id = {id}";
+            using (IDbConnection conn = Connection)
+            {
+                return conn.Query<Student>(sql).Count() > 0;
+            }
         }
     }
+
 }
