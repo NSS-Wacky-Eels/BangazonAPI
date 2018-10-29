@@ -31,26 +31,26 @@ namespace Bangazon.Controllers
             }
         }
 
-        // GET api/customers
-        [HttpGet]
-        public async Task<IActionResult> Get(string q)
-        {
-            string sql = @"
-            SELECT
-                c.Id,
-                c.FirstName,
-                c.LastName
-            FROM Customer c
-            ";
-            Console.WriteLine(sql);
+        //// GET api/customers
+        //[HttpGet]
+        //public async Task<IActionResult> Get(string s)
+        //{
+        //    string sql = @"
+        //    SELECT
+        //        c.Id,
+        //        c.FirstName,
+        //        c.LastName
+        //    FROM Customer c
+        //    ";
+        //    Console.WriteLine(sql);
 
-            using (IDbConnection conn = Connection)
-            {
+        //    using (IDbConnection conn = Connection)
+        //    {
 
-                IEnumerable<Customer> customers = await conn.QueryAsync<Customer>(sql);
-                return Ok(customers);
-            }
-        }
+        //        IEnumerable<Customer> customers = await conn.QueryAsync<Customer>(sql);
+        //        return Ok(customers);
+        //    }
+        //}
 
         // GET api/customers/5
         [HttpGet("{id}", Name = "GetCustomer")]
@@ -69,6 +69,38 @@ namespace Bangazon.Controllers
             {
                 IEnumerable<Customer> customers = await conn.QueryAsync<Customer>(sql);
                 return Ok(customers);
+            }
+        }
+
+        // GET api/students?q=Taco
+        [HttpGet]
+        public async Task<IActionResult> Get(string q)
+        {
+            string sql = @"
+            SELECT
+                c.Id,
+                c.FirstName,
+                c.LastName
+            FROM Customer c
+            WHERE 1=1
+            ";
+
+            if (q != null)
+            {
+                string isQ = $@"
+                    AND c.FirstName LIKE '%{q}%'
+                    OR c.LastName LIKE '%{q}%'
+                ";
+                sql = $"{sql} {isQ}";
+            }
+
+            Console.WriteLine(sql);
+
+            using (IDbConnection conn = Connection)
+            {
+
+                IEnumerable<Customer> customer = await conn.QueryAsync<Customer>(sql);
+                return Ok(customer);
             }
         }
 
