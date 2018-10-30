@@ -112,7 +112,8 @@ namespace Bangazon.Controllers
             string sql = $@"
                 UPDATE PaymentType
                 SET Name = '{paymentType.Name}',
-                    AcctNumber = '{paymentType.AcctNumber}'
+                    AcctNumber = '{paymentType.AcctNumber}',
+                    CustomerId = '{paymentType.CustomerId}'
                 WHERE Id = {id}";
 
             try
