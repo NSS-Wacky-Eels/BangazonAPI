@@ -137,13 +137,15 @@ namespace Bangazon.Controllers
         public async Task<IActionResult> Post([FromBody] Product product)
         {
             string sql = $@"INSERT INTO Product 
-            (Title, Price, Description, Quantity)
+            (Title, Price, Description, Quantity, ProductTypeId, CustomerId)
             VALUES
             (
                 '{product.Title}'
                 ,'{product.Price}'
                 ,'{product.Description}'
-                ,{product.Quantity}
+                ,'{product.Quantity}'
+                ,'{product.ProductTypeId}'
+                ,'{product.CustomerId}'
             );
             SELECT SCOPE_IDENTITY();";
 
@@ -165,6 +167,8 @@ namespace Bangazon.Controllers
                 Price = '{product.Price}',
                 Description = '{product.Description}'
                 Quantity = '{product.Quantity}'
+                ProductTypeId = '{product.ProductTypeId}'
+                CustomerId = '{product.CustomerId}'
             WHERE Id = {id}";
 
             try
