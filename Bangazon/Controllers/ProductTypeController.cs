@@ -107,7 +107,7 @@ namespace Bangazon.Controllers
             string sql = $@"
             UPDATE ProductType
             SET Name = '{productType.Name}'
-            WHERE Id = {productType.Id}";
+            WHERE Id = {id}";
                    try
             {
                 using (IDbConnection conn = Connection)
