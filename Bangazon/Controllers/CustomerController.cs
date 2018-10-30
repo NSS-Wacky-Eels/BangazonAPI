@@ -1,186 +1,173 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Threading.Tasks;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.Extensions.Configuration;
-//using System.Data;
-//using System.Data.SqlClient;
+﻿﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using System.Data;
+using System.Data.SqlClient;
+using Dapper;
+using Bangazon.Models;
+using Microsoft.AspNetCore.Http;
 
-//using Dapper;
-//using Microsoft.AspNetCore.Http;
+namespace Bangazon.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class CustomersController : ControllerBase
+    {
+        private readonly IConfiguration _config;
 
-//namespace Bangazon.Controllers
-//{
-//    [Route("api/[controller]")]
-//    [ApiController]
-//    public class CustomerController : ControllerBase
-//    {
-//        private readonly IConfiguration _config;
+        public CustomersController(IConfiguration config)
+        {
+            _config = config;
+        }
 
-//        public CustomerController(IConfiguration config)
-//        {
-//            _config = config;
-//        }
+        public IDbConnection Connection
+        {
+            get
+            {
+                return new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+            }
+        }
 
-//        public IDbConnection Connection
-//        {
-//            get
-//            {
-//                return new SqlConnection(_config.GetConnectionString("DefaultConnection"));
-//            }
-//        }
+        //// GET api/customers
+        //[HttpGet]
+        //public async Task<IActionResult> Get(string s)
+        //{
+        //    string sql = @"
+        //    SELECT
+        //        c.Id,
+        //        c.FirstName,
+        //        c.LastName
+        //    FROM Customer c
+        //    ";
+        //    Console.WriteLine(sql);
 
-//        //// GET api/customers?q=Taco
-//        //[HttpGet]
-//        //public async Task<IActionResult> Get(string q)
-//        //{
-//        //    string sql = @"
-//        //    SELECT
-//        //        c.Id,
-//        //        c.FirstName,
-//        //        c.LastName,
-//        //        c.Id,
-//        //        c.Name
-//        //    FROM Customer c
-//        //    JOIN Cohort c ON s.CohortId = c.Id
-//        //    WHERE 1=1
-//        //    ";
+        //    using (IDbConnection conn = Connection)
+        //    {
 
-//        //    if (q != null)
-//        //    {
-//        //        string isQ = $@"
-//        //            AND i.FirstName LIKE '%{q}%'
-//        //            OR i.LastName LIKE '%{q}%'
-//        //            OR i.SlackHandle LIKE '%{q}%'
-//        //        ";
-//        //        sql = $"{sql} {isQ}";
-//        //    }
+        //        IEnumerable<Customer> customers = await conn.QueryAsync<Customer>(sql);
+        //        return Ok(customers);
+        //    }
+        //}
 
-//        //    Console.WriteLine(sql);
+        // GET api/customers/5
+        [HttpGet("{id}", Name = "GetCustomer")]
+        public async Task<IActionResult> Get([FromRoute]int id)
+        {
+            string sql = $@"
+            SELECT
+                c.Id,
+                c.FirstName,
+                c.LastName
+            FROM Customer c
+            WHERE c.Id = {id}
+            ";
 
-//        //    using (IDbConnection conn = Connection)
-//        //    {
+            using (IDbConnection conn = Connection)
+            {
+                IEnumerable<Customer> customers = await conn.QueryAsync<Customer>(sql);
+                return Ok(customers);
+            }
+        }
 
-//        //        IEnumerable<Student> students = await conn.QueryAsync<Student, Cohort, Student>(
-//        //            sql,
-//        //            (student, cohort) =>
-//        //            {
-//        //                student.Cohort = cohort;
-//        //                return student;
-//        //            }
-//        //        );
-//        //        return Ok(students);
-//        //    }
-//        //}
+        // GET api/students?q=Taco
+        [HttpGet]
+        public async Task<IActionResult> Get(string q)
+        {
+            string sql = @"
+            SELECT
+                c.Id,
+                c.FirstName,
+                c.LastName
+            FROM Customer c
+            WHERE 1=1
+            ";
 
-//        // GET api/students/5
-//        [HttpGet("{id}", Name = "GetStudent")]
-//        public async Task<IActionResult> Get([FromRoute]int id)
-//        {
-//            string sql = $@"
-//            SELECT
-//                s.Id,
-//                s.FirstName,
-//                s.LastName,
-//                s.SlackHandle,
-//                s.CohortId
-//            FROM Student s
-//            WHERE s.Id = {id}
-//            ";
+            if (q != null)
+            {
+                string isQ = $@"
+                    AND c.FirstName LIKE '%{q}%'
+                    OR c.LastName LIKE '%{q}%'
+                ";
+                sql = $"{sql} {isQ}";
+            }
 
-//            using (IDbConnection conn = Connection)
-//            {
-//                IEnumerable<Student> students = await conn.QueryAsync<Student>(sql);
-//                return Ok(students);
-//            }
-//        }
+            Console.WriteLine(sql);
 
-//        // POST api/students
-//        [HttpPost]
-//        public async Task<IActionResult> Post([FromBody] Student student)
-//        {
-//            string sql = $@"INSERT INTO Student 
-//            (FirstName, LastName, SlackHandle, CohortId)
-//            VALUES
-//            (
-//                '{student.FirstName}'
-//                ,'{student.LastName}'
-//                ,'{student.SlackHandle}'
-//                ,{student.CohortId}
-//            );
-//            SELECT SCOPE_IDENTITY();";
+            using (IDbConnection conn = Connection)
+            {
 
-//            using (IDbConnection conn = Connection)
-//            {
-//                var newId = (await conn.QueryAsync<int>(sql)).Single();
-//                student.Id = newId;
-//                return CreatedAtRoute("GetStudent", new { id = newId }, student);
-//            }
-//        }
+                IEnumerable<Customer> customer = await conn.QueryAsync<Customer>(sql);
+                return Ok(customer);
+            }
+        }
 
-//        // PUT api/students/5
-//        [HttpPut("{id}")]
-//        public async Task<IActionResult> Put(int id, [FromBody] Student student)
-//        {
-//            string sql = $@"
-//            UPDATE Student
-//            SET FirstName = '{student.FirstName}',
-//                LastName = '{student.LastName}',
-//                SlackHandle = '{student.SlackHandle}'
-//            WHERE Id = {id}";
+        // POST api/students
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] Customer customer)
+        {
+            string sql = $@"INSERT INTO Customer 
+            (FirstName, LastName)
+            VALUES
+            (
+                '{customer.FirstName}'
+                ,'{customer.LastName}'
+            );
+            SELECT SCOPE_IDENTITY();";
 
-//            try
-//            {
-//                using (IDbConnection conn = Connection)
-//                {
-//                    int rowsAffected = await conn.ExecuteAsync(sql);
-//                    if (rowsAffected > 0)
-//                    {
-//                        return new StatusCodeResult(StatusCodes.Status204NoContent);
-//                    }
-//                    throw new Exception("No rows affected");
-//                }
-//            }
-//            catch (Exception)
-//            {
-//                if (!StudentExists(id))
-//                {
-//                    return NotFound();
-//                }
-//                else
-//                {
-//                    throw;
-//                }
-//            }
-//        }
+            using (IDbConnection conn = Connection)
+            {
+                var newId = (await conn.QueryAsync<int>(sql)).Single();
+                customer.Id = newId;
+                return CreatedAtRoute("GetCustomer", new { id = newId }, customer);
+            }
+        }
 
-//        // DELETE api/students/5
-//        [HttpDelete("{id}")]
-//        public async Task<IActionResult> Delete(int id)
-//        {
-//            string sql = $@"DELETE FROM Student WHERE Id = {id}";
+        // PUT api/customers/3
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(int id, [FromBody] Customer customer)
+        {
+            string sql = $@"
+            UPDATE Customer
+            SET FirstName = '{customer.FirstName}',
+                LastName = '{customer.LastName}'
+            WHERE Id = {id}";
 
-//            using (IDbConnection conn = Connection)
-//            {
-//                int rowsAffected = await conn.ExecuteAsync(sql);
-//                if (rowsAffected > 0)
-//                {
-//                    return new StatusCodeResult(StatusCodes.Status204NoContent);
-//                }
-//                throw new Exception("No rows affected");
-//            }
+            try
+            {
+                using (IDbConnection conn = Connection)
+                {
+                    int rowsAffected = await conn.ExecuteAsync(sql);
+                    if (rowsAffected > 0)
+                    {
+                        return new StatusCodeResult(StatusCodes.Status204NoContent);
+                    }
+                    throw new Exception("No rows affected");
+                }
+            }
+            catch (Exception)
+            {
+                if (!CustomerExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
 
-//        }
+        private bool CustomerExists(int id)
+        {
+            string sql = $"SELECT Id FROM Customer WHERE Id = {id}";
+            using (IDbConnection conn = Connection)
+            {
+                return conn.Query<Customer>(sql).Count() > 0;
+            }
+        }
+    }
 
-//        private bool StudentExists(int id)
-//        {
-//            string sql = $"SELECT Id FROM Student WHERE Id = {id}";
-//            using (IDbConnection conn = Connection)
-//            {
-//                return conn.Query<Student>(sql).Count() > 0;
-//            }
-//        }
-//    }
-
-//}
+}
