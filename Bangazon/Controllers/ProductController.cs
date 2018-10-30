@@ -88,7 +88,7 @@ namespace Bangazon.Controllers
 //}
 //        }
 
-        // GET api/students/5
+        // GET api/products/5
 
         [HttpGet("{id}", Name = "GetProduct")]
         public async Task<IActionResult> Get([FromRoute]int id)
@@ -99,7 +99,9 @@ namespace Bangazon.Controllers
                 p.Title,
                 p.Price,
                 p.Description,
-                p.Quantity
+                p.Quantity,
+                p.CustomerId,
+                p.ProductTypeId
             FROM Product p
             WHERE p.Id = {id}
             ";
@@ -121,7 +123,9 @@ namespace Bangazon.Controllers
                 p.Title,
                 p.Price,
                 p.Description,
-                p.Quantity
+                p.Quantity,
+                p.CustomerId,
+                p.ProductTypeId
             FROM Product p
             ";
 
@@ -132,7 +136,7 @@ namespace Bangazon.Controllers
             }
         }
 
-        // POST api/students
+        // POST api/products
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Product product)
         {
@@ -157,17 +161,17 @@ namespace Bangazon.Controllers
             }
         }
 
-        // PUT api/students/5
+        // PUT api/products/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Product product)
         {
             string sql = $@"
-            UPDATE Student
+            UPDATE Product
             SET Title = '{product.Title}',
                 Price = '{product.Price}',
-                Description = '{product.Description}'
-                Quantity = '{product.Quantity}'
-                ProductTypeId = '{product.ProductTypeId}'
+                Description = '{product.Description}',
+                Quantity = '{product.Quantity}',
+                ProductTypeId = '{product.ProductTypeId}',
                 CustomerId = '{product.CustomerId}'
             WHERE Id = {id}";
 
