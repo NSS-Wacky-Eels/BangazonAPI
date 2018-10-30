@@ -190,7 +190,7 @@ INSERT INTO Customer
 VALUES
 ('Taylor', 'Gulley');
 
-SET IDENTITY_INSERT ProductType ON
+
 INSERT INTO ProductType
 ([Name])
 VALUES
