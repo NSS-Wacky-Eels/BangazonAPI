@@ -190,6 +190,7 @@ INSERT INTO Customer
 VALUES
 ('Taylor', 'Gulley');
 
+
 INSERT INTO ProductType
 ([Name])
 VALUES
