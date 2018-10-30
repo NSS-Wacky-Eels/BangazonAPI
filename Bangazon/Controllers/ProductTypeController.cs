@@ -94,9 +94,9 @@ namespace Bangazon.Controllers
 
             using (IDbConnection conn = Connection)
             {
-                var newName = (await conn.QueryAsync<string>(sql)).Single();
-                productType.Name = newName;
-                return CreatedAtRoute("GetProductType", new { Name = newName }, productType);
+                var newId = (await conn.QueryAsync<int>(sql)).Single();
+                productType.Id = newId;
+                return CreatedAtRoute("GetProductType", new { Id = newId }, productType);
             }
         }
 
