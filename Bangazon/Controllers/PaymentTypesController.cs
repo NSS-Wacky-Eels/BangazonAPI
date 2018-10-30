@@ -34,7 +34,7 @@ namespace Bangazon.Controllers
 
         // GET api/paymenttypes
         [HttpGet]
-        public async Task<IActionResult> Get(string q)
+        public async Task<IActionResult> Get()
         {
             using (IDbConnection conn = Connection)
             {
@@ -46,17 +46,7 @@ namespace Bangazon.Controllers
                 pt.CustomerId
             FROM PaymentType pt
             WHERE 1=1
-            ";
-
-                if (q != null)
-                {
-                    string isQ = $@"
-                    AND i.Name LIKE '%{q}%'
-                    OR i.AcctNumber LIKE '%{q}%'
-                    OR i.CustomerId LIKE '%{q}%'
-                ";
-                    sql = $"{sql} {isQ}";
-                }
+            ";  
                 var paymentTypes = await conn.QueryAsync<PaymentType>(sql);
                 return Ok(paymentTypes);
             }
