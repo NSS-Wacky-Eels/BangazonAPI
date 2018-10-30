@@ -70,7 +70,6 @@ namespace Bangazon.Controllers
                     (order, customer) =>
                     {
                         order.Customer = customer;
-                       // order.paymentType = paymentType;
                         return order;
                     }
                 );
@@ -97,7 +96,15 @@ namespace Bangazon.Controllers
 
             using (IDbConnection conn = Connection)
             {
-                IEnumerable<Order> orders = await conn.QueryAsync<Order>(sql);
+
+                IEnumerable<Order> orders = await conn.QueryAsync<Order, Customer, Order>(
+                    sql,
+                    (order, customer) =>
+                    {
+                        order.Customer = customer;
+                        return order;
+                    }
+                );
                 return Ok(orders);
             }
         }
