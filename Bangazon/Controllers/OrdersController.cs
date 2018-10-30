@@ -14,7 +14,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace Bangazon.Controllers
 {
-    public class OrdersController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class OrdersController : ControllerBase
     {
         private readonly IConfiguration _config;
 
@@ -42,12 +44,9 @@ namespace Bangazon.Controllers
                 o.PaymentTypeId,
                 c.Id,
                 c.FirstName,
-                c.LastName,
-                pt.Id,
-                pt.Name
-            FROM Order o
+                c.LastName
+            FROM [Order] o
             JOIN Customer c ON o.CustomerId = c.Id
-            JOIN PaymentType pt ON o.PaymentTypeId = pt.Id
             WHERE 1=1
             ";
 
@@ -66,12 +65,12 @@ namespace Bangazon.Controllers
             using (IDbConnection conn = Connection)
             {
 
-                IEnumerable<Order> orders = await conn.QueryAsync<Order, Customer, PaymentType, Order>(
+                IEnumerable<Order> orders = await conn.QueryAsync<Order, Customer, Order>(
                     sql,
-                    (order, customer, paymentType) =>
+                    (order, customer) =>
                     {
-                        order.customer = customer;
-                        order.paymentType = paymentType;
+                        order.Customer = customer;
+                       // order.paymentType = paymentType;
                         return order;
                     }
                 );
@@ -90,12 +89,9 @@ namespace Bangazon.Controllers
                 o.PaymentTypeId,
                 c.Id,
                 c.FirstName,
-                c.LastName,
-                pt.Id,
-                pt.Name
-            FROM Order o
+                c.LastName
+            FROM [Order] o
             JOIN Customer c ON o.CustomerId = c.Id
-            JOIN PaymentType pt ON o.PaymentTypeId = pt.Id
             WHERE o.Id = {id}
             ";
 
@@ -110,7 +106,7 @@ namespace Bangazon.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Order order)
         {
-            string sql = $@"INSERT INTO Order 
+            string sql = $@"INSERT INTO [Order] 
             (CustomerId, PaymentTypeId)
             VALUES
             (
@@ -132,7 +128,7 @@ namespace Bangazon.Controllers
         public async Task<IActionResult> Put(int id, [FromBody] Order order)
         {
             string sql = $@"
-            UPDATE Student
+            UPDATE [Order]
             SET CustomerId = '{order.CustomerId}',
                 PaymentTypeId = '{order.PaymentTypeId}'
             WHERE Id = {id}";
@@ -166,7 +162,7 @@ namespace Bangazon.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            string sql = $@"DELETE FROM Order WHERE Id = {id}";
+            string sql = $@"DELETE FROM [Order] WHERE Id = {id}";
 
             using (IDbConnection conn = Connection)
             {
@@ -182,7 +178,7 @@ namespace Bangazon.Controllers
 
         private bool OrderExists(int id)
         {
-            string sql = $"SELECT Id FROM Order WHERE Id = {id}";
+            string sql = $"SELECT Id FROM [Order] WHERE Id = {id}";
             using (IDbConnection conn = Connection)
             {
                 return conn.Query<Order>(sql).Count() > 0;
