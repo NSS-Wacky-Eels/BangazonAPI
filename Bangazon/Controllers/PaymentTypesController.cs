@@ -71,7 +71,8 @@ namespace Bangazon.Controllers
             SELECT
                 pt.Id,
                 pt.Name,
-                pt.AcctNumber
+                pt.AcctNumber,
+                pt.CustomerId
             FROM PaymentType pt
             WHERE pt.Id = {id}
             ";
