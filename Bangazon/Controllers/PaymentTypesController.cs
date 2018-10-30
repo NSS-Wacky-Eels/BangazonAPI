@@ -43,10 +43,8 @@ namespace Bangazon.Controllers
                 pt.Id,
                 pt.Name,
                 pt.AcctNumber,
-                pt.CustomerId,
-                c.Id
+                pt.CustomerId
             FROM PaymentType pt
-            JOIN Customer c ON pt.CustomerId = c.Id
             WHERE 1=1
             ";
 
@@ -55,6 +53,7 @@ namespace Bangazon.Controllers
                     string isQ = $@"
                     AND i.Name LIKE '%{q}%'
                     OR i.AcctNumber LIKE '%{q}%'
+                    OR i.CustomerId LIKE '%{q}%'
                 ";
                     sql = $"{sql} {isQ}";
                 }
