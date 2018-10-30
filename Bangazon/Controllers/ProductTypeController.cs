@@ -86,19 +86,17 @@ namespace Bangazon.Controllers
         public async Task<IActionResult> Post([FromBody] ProductType productType)
         {
             string sql = $@"INSERT INTO ProductType 
-            (Id, Name)
+            (Name)
             VALUES
-            (
-                '{productType.Id}'
-                ,'{productType.Name}'
-            );
+            ( '{productType.Name}');
+
             SELECT SCOPE_IDENTITY();";
 
             using (IDbConnection conn = Connection)
             {
-                var newId = (await conn.QueryAsync<int>(sql)).Single();
-                productType.Id = newId;
-                return CreatedAtRoute("GetProductType", new { id = newId }, productType);
+                var newName = (await conn.QueryAsync<string>(sql)).Single();
+                productType.Name = newName;
+                return CreatedAtRoute("GetProductType", new { Name = newName }, productType);
             }
         }
 
@@ -108,9 +106,8 @@ namespace Bangazon.Controllers
         {
             string sql = $@"
             UPDATE ProductType
-            SET Id = '{productType.Id}',
-                LastName = '{productType.Name}'
-            WHERE Id = {id}";
+            SET Name = '{productType.Name}'
+            WHERE Id = {productType.Id}";
                    try
             {
                 using (IDbConnection conn = Connection)
