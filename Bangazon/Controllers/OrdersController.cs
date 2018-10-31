@@ -76,6 +76,34 @@ namespace Bangazon.Controllers
                         return Ok(orders);
                     }
                 }
+                if (_include == "products")
+                {
+                    string isCustomers = @"
+                        SELECT
+                            o.Id,
+                            o.CustomerId,
+                            o.PaymentTypeId,
+                            c.Id,
+                            c.FirstName,
+                            c.LastName
+                        FROM [Order] o
+                        JOIN OrderProduct op ON o.Id = c.Id
+                        WHERE 1=1
+                        ";
+                    using (IDbConnection conn = Connection)
+                    {
+
+                        IEnumerable<Order> orders = await conn.QueryAsync<Order, Customer, Order>(
+                            isCustomers,
+                            (order, customer) =>
+                            {
+                                order.Customer = customer;
+                                return order;
+                            }
+                        );
+                        return Ok(orders);
+                    }
+                }
             }
             
             /*
