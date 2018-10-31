@@ -210,3 +210,63 @@ INSERT INTO [Order]
 (CustomerId, PaymentTypeId)
 VALUES
 (3, 3);
+
+INSERT INTO Department
+([Name], Budget)
+VALUES
+('Marketing', 50000);
+
+INSERT INTO Department
+([Name], Budget)
+VALUES
+('IT', 25000);
+
+INSERT INTO Department
+([Name], Budget)
+VALUES
+('Sales', 100000);
+
+INSERT INTO Employee
+(FirstName, LastName, DepartmentId, isSupervisor)
+VALUES
+('Madison', 'Peper', 2, 1);
+
+INSERT INTO Employee
+(FirstName, LastName, DepartmentId, IsSuperVisor)
+VALUES
+('Taylor', 'Gulley', 1, 1);
+
+INSERT INTO Employee
+(FirstName, LastName, DepartmentId, IsSuperVisor)
+VALUES
+('Matt', 'Hall', 3, 0);
+
+INSERT INTO TrainingProgram
+(StartDate, EndDate, MaxAttendees)
+VALUES
+('20180704 09:00:00 AM', '20190108 12:00:00 PM', 30);
+
+INSERT INTO TrainingProgram
+(StartDate, EndDate, MaxAttendees)
+VALUES
+('20180530 09:00:00 AM', '20180908 13:30:00 PM', 25);
+
+INSERT INTO TrainingProgram
+(StartDate, EndDate, MaxAttendees)
+VALUES
+('20190319 09:00:00 AM', '20190610 20:00:00 PM', 50);
+
+INSERT INTO Computer
+(PurchaseDate, DecomissionDate)
+VALUES
+('20111010 07:00:00 AM', '20121010 15:00:00 PM');
+
+INSERT INTO Computer
+(PurchaseDate, DecomissionDate)
+VALUES
+('20121010 07:00:00 AM', '20141210 17:00:00 PM');
+
+INSERT INTO Computer
+(PurchaseDate, DecomissionDate)
+VALUES
+('20170305 07:00:00 AM', '20181110 05:00:00 AM');
