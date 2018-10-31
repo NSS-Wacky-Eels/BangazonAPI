@@ -46,15 +46,38 @@ namespace Bangazon.Controllers
             WHERE 1=1
             ";
 
-            /*
-            if (_include == "customers")
+            if (_include != null)
             {
-                string isCustomers = $@"
-                    AND JOIN Customer c ON o.CustomerId = c.Id
-                ";
-                sql = $"{sql} {isCustomers}";
+                if (_include == "customers")
+                {
+                    string isCustomers = @"
+                        SELECT
+                            o.Id,
+                            o.CustomerId,
+                            o.PaymentTypeId,
+                            c.Id,
+                            c.FirstName,
+                            c.LastName
+                        FROM [Order] o
+                        JOIN Customer c ON o.CustomerId = c.Id
+                        WHERE 1=1
+                        ";
+                    using (IDbConnection conn = Connection)
+                    {
+
+                        IEnumerable<Order> orders = await conn.QueryAsync<Order, Customer, Order>(
+                            isCustomers,
+                            (order, customer) =>
+                            {
+                                order.Customer = customer;
+                                return order;
+                            }
+                        );
+                        return Ok(orders);
+                    }
+                }
             }
-            */
+            
             /*
             if (_include == products)
             {
@@ -85,13 +108,8 @@ namespace Bangazon.Controllers
             using (IDbConnection conn = Connection)
             {
 
-                IEnumerable<Order> orders = await conn.QueryAsync<Order, Customer, Order>(
-                    sql,
-                    (order, customer) =>
-                    {
-                        order.Customer = customer;
-                        return order;
-                    }
+                IEnumerable<Order> orders = await conn.QueryAsync<Order>(
+                    sql
                 );
                 return Ok(orders);
             }
