@@ -11,7 +11,7 @@ namespace Bangazon.Models
         public int CustomerId { get; set; }
         public int PaymentTypeId { get; set; }
         public Customer Customer { get; set; }
-        public List<Product> Products { get; set; }
+        public List<Product> Products = new List<Product>();
         public PaymentType PaymentType { get; set; }
     }
 }

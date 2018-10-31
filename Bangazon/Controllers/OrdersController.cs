@@ -78,26 +78,34 @@ namespace Bangazon.Controllers
                 }
                 if (_include == "products")
                 {
-                    string isCustomers = @"
+                    string isProducts = @"
                         SELECT
                             o.Id,
                             o.CustomerId,
                             o.PaymentTypeId,
-                            c.Id,
-                            c.FirstName,
-                            c.LastName
+                            op.Id,
+                            op.OrderId,
+                            op.ProductId,
+                            p.Id,
+                            p.Price,
+                            p.Title,
+                            p.Description,
+                            p.Quantity,
+                            p.ProductTypeId,
+                            p.CustomerId
                         FROM [Order] o
-                        JOIN OrderProduct op ON o.Id = c.Id
+                        JOIN OrderProduct op ON o.Id = op.OrderId
+                        JOIN Product p ON op.ProductId = p.Id
                         WHERE 1=1
                         ";
                     using (IDbConnection conn = Connection)
                     {
 
-                        IEnumerable<Order> orders = await conn.QueryAsync<Order, Customer, Order>(
-                            isCustomers,
-                            (order, customer) =>
+                        IEnumerable<Order> orders = await conn.QueryAsync<Order, Product, Order>(
+                            isProducts,
+                            (order, product) =>
                             {
-                                order.Customer = customer;
+                                order.Products.Add(product);
                                 return order;
                             }
                         );
@@ -105,15 +113,6 @@ namespace Bangazon.Controllers
                     }
                 }
             }
-            
-            /*
-            if (_include == products)
-            {
-                stringProducts = $@"
-                    AND JOIN Product p ON
-                ";
-            }
-            */
 
             /*
             if (completed == false)
