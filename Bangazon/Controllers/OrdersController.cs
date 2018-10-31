@@ -35,30 +35,50 @@ namespace Bangazon.Controllers
 
         // GET api/orders?q=Taco
         [HttpGet]
-        public async Task<IActionResult> Get(string q)
+        public async Task<IActionResult> Get(string _include)
         {
             string sql = @"
             SELECT
                 o.Id,
                 o.CustomerId,
-                o.PaymentTypeId,
-                c.Id,
-                c.FirstName,
-                c.LastName
+                o.PaymentTypeId
             FROM [Order] o
-            JOIN Customer c ON o.CustomerId = c.Id
             WHERE 1=1
             ";
 
             /*
-            if (q != null)
+            if (_include == "customers")
             {
-                string isQ = $@"
-                    AND i.FirstName LIKE '%{q}%'
-                    OR i.LastName LIKE '%{q}%'
-                    OR i.SlackHandle LIKE '%{q}%'
+                string isCustomers = $@"
+                    AND JOIN Customer c ON o.CustomerId = c.Id
                 ";
-                sql = $"{sql} {isQ}";
+                sql = $"{sql} {isCustomers}";
+            }
+            */
+            /*
+            if (_include == products)
+            {
+                stringProducts = $@"
+                    AND JOIN Product p ON
+                ";
+            }
+            */
+
+            /*
+            if (completed == false)
+            {
+                string isFalse = $@"
+                    AND Where o.PaymentTypeId = null
+                ";
+                sql = $"{sql} {isFalse}";
+            }
+
+            if (completed == true)
+            {
+                string isTrue = $@"
+                    AND Where o.PaymentTypeId != null
+                ";
+                sql = $"{sql} {isTrue}";
             }
             */
 
