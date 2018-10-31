@@ -31,9 +31,9 @@ namespace Bangazon.Controllers
             }
         }
 
-        //// GET api/customers
-        //[HttpGet]
-        //public async Task<IActionResult> Get(string s)
+        //// GET api/customers?_include=products
+        //[HttpGet(Name = "GetCustomerProduct")]
+        //public async Task<IActionResult> Get()
         //{
         //    string sql = @"
         //    SELECT
@@ -74,9 +74,9 @@ namespace Bangazon.Controllers
 
         // GET api/students?q=Taco
         [HttpGet]
-        public async Task<IActionResult> Get(string q)
+        public async Task<IActionResult> Get(string q, string _includes)
         {
-            string sql = @"
+            string sql = $@"
             SELECT
                 c.Id,
                 c.FirstName,
@@ -85,26 +85,69 @@ namespace Bangazon.Controllers
             WHERE 1=1
             ";
 
-            if (q != null)
+            if (_includes != null && _includes == "product")
+            {
+                string includeSQL = @"
+                SELECT
+                    c.Id,
+                    c.FirstName,
+                    c.LastName,
+                    p.Id,
+                    p.Title,
+                    p.Price,
+                    p.Description,
+                    p.Quantity,
+                    p.CustomerId,
+                    p.ProductTypeId
+                FROM Customer c
+                JOIN Product p ON p.CustomerId = c.Id
+                WHERE 1=1
+                ";
+
+                using (IDbConnection conn = Connection)
+                {
+                    Console.WriteLine(includeSQL);
+
+                    IEnumerable<Customer> customers = await conn.QueryAsync<Customer, Product, Customer>(
+                            includeSQL,
+                            (customer, product) =>
+                            {
+                                if (customer.Products.ContainsValue(product) == null)
+                                {
+                                    customer.Products.Add(product.Title, product);
+                                    return customer;
+                                }
+                                return customer;
+                            }
+                        );
+                    return Ok(customers);
+                }
+
+            } else if (q != null)
             {
                 string isQ = $@"
-                    AND c.FirstName LIKE '%{q}%'
+                AND c.FirstName LIKE '%{q}%'
                     OR c.LastName LIKE '%{q}%'
                 ";
-                sql = $"{sql} {isQ}";
+                    sql = $"{sql} {isQ}";
+
+                Console.WriteLine(sql);
+                using (IDbConnection conn = Connection)
+                {
+                    IEnumerable<Customer> customers = await conn.QueryAsync<Customer>(sql);
+                    return Ok(customers);
+                }
             }
-
             Console.WriteLine(sql);
-
             using (IDbConnection conn = Connection)
             {
-
-                IEnumerable<Customer> customer = await conn.QueryAsync<Customer>(sql);
-                return Ok(customer);
+                IEnumerable<Customer> customers = await conn.QueryAsync<Customer>(sql);
+                return Ok(customers);
             }
+
         }
 
-        // POST api/students
+        // POST api/customer
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Customer customer)
         {

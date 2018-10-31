@@ -7,5 +7,6 @@ namespace Bangazon.Models
         public int Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public Dictionary<string, Product> Products { get; set; }
     }
 }
