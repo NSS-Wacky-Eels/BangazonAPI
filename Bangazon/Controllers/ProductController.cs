@@ -31,64 +31,6 @@ namespace Bangazon.Controllers
             }
         }
 
-        // GET api/students?q=Taco
-        //[HttpGet]
-        //public async Task<IActionResult> Get(string q)
-        //{
-        //    string sql = @"
-        //    SELECT
-        //        p.Id,
-        //        p.Title,
-        //        p.Price,
-        //        p.Description,
-        //        p.Quantity,
-        //        p.CustomerId,
-        //        p.ProductTypeId,
-        //        c.Id,
-        //        c.FirstName,
-        //        pt.Id,
-        //        pt.Name
-                
-
-
-        //    FROM Product p
-        //    JOIN Customer c ON p.CustomerId = c.Id
-        //    JOIN ProductType pt ON p.ProductTypeId = pt.Id
-        //    WHERE 1=1
-        //    ";
-
-            //STEVE STUFF RIGHT HERE
-            //if (q != null)
-            //{
-            //    string isQ = $@"
-            //        AND i.FirstName LIKE '%{q}%'
-            //        OR i.LastName LIKE '%{q}%'
-            //        OR i.SlackHandle LIKE '%{q}%'
-            //    ";
-            //    sql = $"{sql} {isQ}";
-            //}
-
-//        Console.WriteLine(sql);
-
-//            using (IDbConnection conn = Connection)
-//            {
-//                //Properties in middle becuase Product is depenent on them (see ERD)
-//                IEnumerable<Product> products = await conn.QueryAsync<Product, Customer, ProductType, Product>(
-//                    sql,
-//                    (product, customer, productType) =>
-//                    {
-//                        // Customer and PrdocutType Models
-//                        product.Customer = customer;
-//                        product.ProductType = productType;
-//                        return product;
-//                    }
-//                );
-//                // USING OK here is a built in feature of c#. 
-//                return Ok(products);
-//}
-//        }
-
-        // GET api/products/5
 
         [HttpGet("{id}", Name = "GetProduct")]
         public async Task<IActionResult> Get([FromRoute]int id)
