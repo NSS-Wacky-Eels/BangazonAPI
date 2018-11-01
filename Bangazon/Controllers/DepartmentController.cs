@@ -52,6 +52,7 @@ namespace Bangazon.Controllers
 
 
         // GET api/department?_filter=budget&_taco=3000000. Here we are setting two parameters _filter and _gt for client to use to sort.
+        // DO NOT NEET TO UTILIZE ALL PARAMETERS TO GET A RETURN FROM CLIENT SIDE. 
 
         [HttpGet]
         public async Task<IActionResult> Get(string _filter,int _taco)
@@ -66,8 +67,7 @@ namespace Bangazon.Controllers
             if (_filter == "budget")
             {
                 string isQ = $@"
-                    WHERE d.Budget >= {_taco}
-                  
+                    WHERE d.Budget >= {_taco}  
                 ";
                 sql = $"{sql} {isQ}";
             }
