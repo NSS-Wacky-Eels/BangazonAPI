@@ -31,28 +31,8 @@ namespace Bangazon.Controllers
             }
         }
 
-        //// GET api/customers?_include=products
-        //[HttpGet(Name = "GetCustomerProduct")]
-        //public async Task<IActionResult> Get()
-        //{
-        //    string sql = @"
-        //    SELECT
-        //        c.Id,
-        //        c.FirstName,
-        //        c.LastName
-        //    FROM Customer c
-        //    ";
-        //    Console.WriteLine(sql);
 
-        //    using (IDbConnection conn = Connection)
-        //    {
-
-        //        IEnumerable<Customer> customers = await conn.QueryAsync<Customer>(sql);
-        //        return Ok(customers);
-        //    }
-        //}
-
-        // GET api/customers/5
+        // GET customer by ID
         [HttpGet("{id}", Name = "GetCustomer")]
         public async Task<IActionResult> Get([FromRoute]int id)
         {
@@ -72,7 +52,8 @@ namespace Bangazon.Controllers
             }
         }
 
-        // GET api/students?q=Taco
+        // GET customer and return PaymentTypes and Products
+        // api/customers?_includes=product || api/customer?q=Madi
         [HttpGet]
         public async Task<IActionResult> Get(string q, string _includes)
         {
@@ -85,8 +66,10 @@ namespace Bangazon.Controllers
             WHERE 1=1
             ";
 
+            // IF the '_includes' is not empty AND it's equal to 'product'
             if (_includes != null && _includes == "product")
             {
+                // run this SQL statement that joins customers and products by customerId
                 string includeSQL = @"
                 SELECT
                     c.Id,
@@ -108,25 +91,78 @@ namespace Bangazon.Controllers
                 {
                     Console.WriteLine(includeSQL);
 
+                    // Created a Dictionary to store the current instances of ALL Customers
+                    Dictionary<int, Customer> ProductReport = new Dictionary<int, Customer>();
+
                     IEnumerable<Customer> customers = await conn.QueryAsync<Customer, Product, Customer>(
                             includeSQL,
                             (customer, product) =>
                             {
-                                if (customer.Products.ContainsValue(product) == null)
+                                // for each customer and product, IF the ProductReport DOES NOT contain the key of the customer.Id
+                                if (!ProductReport.ContainsKey(customer.Id))
                                 {
-                                    customer.Products.Add(product.Title, product);
-                                    return customer;
+                                    // ProductReport[1] = customer object
+                                    // Then make an Id with the customer.Id, and then set it's value to the 'customer'
+                                    ProductReport[customer.Id] = customer;
                                 }
+                                // ELSE, go to the index of the customer's Id in ProductReport, and add the current product to the ProductList
+                                ProductReport[customer.Id].ProductsList.Add(product);
                                 return customer;
                             }
                         );
-                    return Ok(customers);
+                    return Ok(ProductReport);
                 }
+            
+            // IF the '_includes' is NOT empty AND it is equal to 'paymenttype'
+            } else if (_includes != null && _includes == "paymenttype")
+            {
+                // run this SQL statement that joins the customer and paymenttype by the customer's Id
+                string includeSQL = @"
+                SELECT
+                    c.Id,
+                    c.FirstName,
+                    c.LastName,
+                    pt.Id,
+                    pt.Name,
+                    pt.AcctNumber,
+                    pt.CustomerId
+                FROM Customer c
+                JOIN PaymentType pt ON pt.CustomerId = c.Id
+                WHERE 1=1
+                ";
 
+                using (IDbConnection conn = Connection)
+                {
+                    Console.WriteLine(includeSQL);
+
+                    // created a dictionary to hold the current instance of the customer 
+                    Dictionary<int, Customer> PaymentTypeReport = new Dictionary<int, Customer>();
+
+                    IEnumerable<Customer> customers = await conn.QueryAsync<Customer, PaymentType, Customer>(
+                            includeSQL,
+                            (customer, paymentType) =>
+                            {
+                                // for each customer and paymenttype, IF the PaymentTypeReport DOES NOT contain the key of the customer's Id
+                                if (!PaymentTypeReport.ContainsKey(customer.Id))
+                                {
+                                    // ProductReport[1] = customer object
+                                    // Make an Id with the customer.Id, and then set it's value to the 'customer'
+                                    PaymentTypeReport[customer.Id] = customer;
+                                }
+                                // ELSE, go to the index of the customer's Id in PaymentTypeReport, and add the paymentType to the PaymentTypeList
+                                PaymentTypeReport[customer.Id].PaymentTypeList.Add(paymentType);
+                                return customer;
+                            }
+                        );
+                    return Ok(PaymentTypeReport);
+                }
+            
+            // IF 'q' is NOT empty
             } else if (q != null)
             {
+                // run this SQL statement that checks if 'q' matches the customer's FirstName or LastName in any way
                 string isQ = $@"
-                AND c.FirstName LIKE '%{q}%'
+                    AND c.FirstName LIKE '%{q}%'
                     OR c.LastName LIKE '%{q}%'
                 ";
                     sql = $"{sql} {isQ}";
@@ -138,6 +174,8 @@ namespace Bangazon.Controllers
                     return Ok(customers);
                 }
             }
+
+            // THIS CONNECTION IS OUTSIDE OF ALL 'IF' STATEMENTS AND IS FOR THE INITIAL SQL STATEMENT ON LINE 60
             Console.WriteLine(sql);
             using (IDbConnection conn = Connection)
             {
