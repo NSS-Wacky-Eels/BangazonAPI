@@ -35,7 +35,7 @@ namespace Bangazon.Controllers
 
         // GET api/orders?q=Taco
         [HttpGet]
-        public async Task<IActionResult> Get(string _include)
+        public async Task<IActionResult> Get(string completed, string _include)
         {
             string sql = @"
             SELECT
@@ -45,6 +45,24 @@ namespace Bangazon.Controllers
             FROM [Order] o
             WHERE 1=1
             ";
+            
+            if (completed == "true")
+            {
+                string isCompleted = @"
+                AND o.PaymentTypeId IS NOT NULL
+                ";
+                sql = $"{sql} {isCompleted}";
+            }
+            if (completed == "false")
+            {
+                string isCompleted = @"
+                AND o.PaymentTypeId IS NULL
+                ";
+                sql = $"{sql} {isCompleted}";
+            }
+
+            Console.WriteLine(sql);
+            
 
             if (_include != null)
             {
@@ -114,24 +132,6 @@ namespace Bangazon.Controllers
                 }
             }
 
-            /*
-            if (completed == false)
-            {
-                string isFalse = $@"
-                    AND Where o.PaymentTypeId = null
-                ";
-                sql = $"{sql} {isFalse}";
-            }
-
-            if (completed == true)
-            {
-                string isTrue = $@"
-                    AND Where o.PaymentTypeId != null
-                ";
-                sql = $"{sql} {isTrue}";
-            }
-            */
-
             using (IDbConnection conn = Connection)
             {
 
@@ -150,25 +150,16 @@ namespace Bangazon.Controllers
             SELECT
                 o.Id,
                 o.CustomerId,
-                o.PaymentTypeId,
-                c.Id,
-                c.FirstName,
-                c.LastName
+                o.PaymentTypeId
             FROM [Order] o
-            JOIN Customer c ON o.CustomerId = c.Id
             WHERE o.Id = {id}
             ";
 
             using (IDbConnection conn = Connection)
             {
 
-                IEnumerable<Order> orders = await conn.QueryAsync<Order, Customer, Order>(
-                    sql,
-                    (order, customer) =>
-                    {
-                        order.Customer = customer;
-                        return order;
-                    }
+                IEnumerable<Order> orders = await conn.QueryAsync<Order>(
+                    sql
                 );
                 return Ok(orders);
             }
