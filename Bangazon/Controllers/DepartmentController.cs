@@ -50,8 +50,11 @@ namespace Bangazon.Controllers
             }
         }
 
+
+        // GET api/department?_filter=budget&_taco=3000000. Here we are setting two parameters _filter and _gt for client to use to sort.
+
         [HttpGet]
-        public async Task<IActionResult> Get(string q)
+        public async Task<IActionResult> Get(string _filter,int _taco)
         {
             string sql = @"
             SELECT
@@ -60,6 +63,14 @@ namespace Bangazon.Controllers
                 d.Budget
             FROM Department d
             ";
+            if (_filter == "budget")
+            {
+                string isQ = $@"
+                    WHERE d.Budget >= {_taco}
+                  
+                ";
+                sql = $"{sql} {isQ}";
+            }
 
             using (IDbConnection conn = Connection)
             {
@@ -120,7 +131,9 @@ namespace Bangazon.Controllers
                 }
             }
         }
-            private bool DepartmentExists(int id)
+        
+
+        private bool DepartmentExists(int id)
             {
                 string sql = $"SELECT Id FROM Product WHERE Id = {id}";
                 using (IDbConnection conn = Connection)
