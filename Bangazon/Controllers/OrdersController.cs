@@ -35,43 +35,108 @@ namespace Bangazon.Controllers
 
         // GET api/orders?q=Taco
         [HttpGet]
-        public async Task<IActionResult> Get(string q)
+        public async Task<IActionResult> Get(string completed, string _include)
         {
             string sql = @"
             SELECT
                 o.Id,
                 o.CustomerId,
-                o.PaymentTypeId,
-                c.Id,
-                c.FirstName,
-                c.LastName
+                o.PaymentTypeId
             FROM [Order] o
-            JOIN Customer c ON o.CustomerId = c.Id
             WHERE 1=1
             ";
-
-            /*
-            if (q != null)
+            
+            if (completed == "true")
             {
-                string isQ = $@"
-                    AND i.FirstName LIKE '%{q}%'
-                    OR i.LastName LIKE '%{q}%'
-                    OR i.SlackHandle LIKE '%{q}%'
+                string isCompleted = @"
+                AND o.PaymentTypeId IS NOT NULL
                 ";
-                sql = $"{sql} {isQ}";
+                sql = $"{sql} {isCompleted}";
             }
-            */
+            if (completed == "false")
+            {
+                string isCompleted = @"
+                AND o.PaymentTypeId IS NULL
+                ";
+                sql = $"{sql} {isCompleted}";
+            }
+
+            Console.WriteLine(sql);
+            
+
+            if (_include != null)
+            {
+                if (_include == "customers")
+                {
+                    string isCustomers = @"
+                        SELECT
+                            o.Id,
+                            o.CustomerId,
+                            o.PaymentTypeId,
+                            c.Id,
+                            c.FirstName,
+                            c.LastName
+                        FROM [Order] o
+                        JOIN Customer c ON o.CustomerId = c.Id
+                        WHERE 1=1
+                        ";
+                    using (IDbConnection conn = Connection)
+                    {
+
+                        IEnumerable<Order> orders = await conn.QueryAsync<Order, Customer, Order>(
+                            isCustomers,
+                            (order, customer) =>
+                            {
+                                order.Customer = customer;
+                                return order;
+                            }
+                        );
+                        return Ok(orders);
+                    }
+                }
+                if (_include == "products")
+                {
+                    string isProducts = @"
+                        SELECT
+                            o.Id,
+                            o.CustomerId,
+                            o.PaymentTypeId,
+                            op.Id,
+                            op.OrderId,
+                            op.ProductId,
+                            p.Id,
+                            p.Price,
+                            p.Title,
+                            p.Description,
+                            p.Quantity,
+                            p.ProductTypeId,
+                            p.CustomerId
+                        FROM [Order] o
+                        JOIN OrderProduct op ON o.Id = op.OrderId
+                        JOIN Product p ON op.ProductId = p.Id
+                        WHERE 1=1
+                        ";
+                    using (IDbConnection conn = Connection)
+                    {
+
+                        IEnumerable<Order> orders = await conn.QueryAsync<Order, Product, Order>(
+                            isProducts,
+                            (order, product) =>
+                            {
+                                order.Products.Add(product);
+                                return order;
+                            }
+                        );
+                        return Ok(orders);
+                    }
+                }
+            }
 
             using (IDbConnection conn = Connection)
             {
 
-                IEnumerable<Order> orders = await conn.QueryAsync<Order, Customer, Order>(
-                    sql,
-                    (order, customer) =>
-                    {
-                        order.Customer = customer;
-                        return order;
-                    }
+                IEnumerable<Order> orders = await conn.QueryAsync<Order>(
+                    sql
                 );
                 return Ok(orders);
             }
@@ -85,25 +150,16 @@ namespace Bangazon.Controllers
             SELECT
                 o.Id,
                 o.CustomerId,
-                o.PaymentTypeId,
-                c.Id,
-                c.FirstName,
-                c.LastName
+                o.PaymentTypeId
             FROM [Order] o
-            JOIN Customer c ON o.CustomerId = c.Id
             WHERE o.Id = {id}
             ";
 
             using (IDbConnection conn = Connection)
             {
 
-                IEnumerable<Order> orders = await conn.QueryAsync<Order, Customer, Order>(
-                    sql,
-                    (order, customer) =>
-                    {
-                        order.Customer = customer;
-                        return order;
-                    }
+                IEnumerable<Order> orders = await conn.QueryAsync<Order>(
+                    sql
                 );
                 return Ok(orders);
             }
