@@ -55,6 +55,9 @@ namespace Bangazon.Controllers
                 ";
                 sql = $"{sql} {isQ}";
             }
+           
+
+
             Console.WriteLine(sql);
             //Using database 
             using (IDbConnection conn = Connection)
@@ -115,10 +118,10 @@ namespace Bangazon.Controllers
         public async Task<IActionResult> Put(int id, [FromBody] TrainingProgram trainingProgram)
         {
             string sql = $@"
-            UPDATE ProductType
-            SET Name = '{trainingProgram.StartDate}'
-                        '{trainingProgram.EndDate}'
-                        '{trainingProgram.MaxAttendees}'
+            UPDATE TrainingProgram
+            SET StartDate = '{trainingProgram.StartDate}',
+             EndDate =  '{trainingProgram.EndDate}',
+             MaxAttendees = '{trainingProgram.MaxAttendees}'
             WHERE Id = {id}";
             try
             {
@@ -144,6 +147,24 @@ namespace Bangazon.Controllers
                 }
 
             }
+        }
+        // DELETE api/<controller>/5
+        [HttpDelete("{id}")]
+
+        public async Task<IActionResult> Delete(int id)
+        {
+            string sql = $@"DELETE FROM TrainingProgram WHERE Id = {id}";
+
+            using (IDbConnection conn = Connection)
+            {
+                int rowsAffected = await conn.ExecuteAsync(sql);
+                if (rowsAffected > 0)
+                {
+                    return new StatusCodeResult(StatusCodes.Status204NoContent);
+                }
+                throw new Exception("No rows affected");
+            }
+
         }
         private bool TrainingProgram(int id)
         {
