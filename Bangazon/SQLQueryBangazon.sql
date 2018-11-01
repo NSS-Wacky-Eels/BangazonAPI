@@ -270,3 +270,18 @@ INSERT INTO Computer
 (PurchaseDate, DecomissionDate)
 VALUES
 ('20170305 07:00:00 AM', '20181110 05:00:00 AM');
+
+INSERT INTO OrderProduct
+(OrderId, ProductId)
+VALUES
+(3,3)
+
+INSERT INTO OrderProduct
+(OrderId, ProductId)
+VALUES
+(3,1)
+
+INSERT INTO OrderProduct
+(OrderId, ProductId)
+VALUES
+(2,2)
